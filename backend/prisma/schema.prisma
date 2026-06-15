@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum TournamentStatus {
+  CREATION
+  ONGOING
+  FINISHED
+}
+
+enum TournamentFormat {
+  ROUND_ROBIN
+  ELIMINATION
+  GROUP_KNOCKOUT
+}
+
+model User {
+  id        Int        @id @default(autoincrement())
+  name      String     @unique
+  role      Role       @default(USER)
+  createdAt DateTime   @default(now())
+  teams     UserTeam[]
+}
+
+model Team {
+  id          Int              @id @default(autoincrement())
+  name        String           @unique
+  createdAt   DateTime         @default(now())
+  members     UserTeam[]
+  homeMatches Match[]          @relation("HomeTeam")
+  awayMatches Match[]          @relation("AwayTeam")
+  tournaments TournamentTeam[]
+  results     TournamentResult[]
+}
+
+model UserTeam {
+  userId Int
+  teamId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team   Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@id([userId, teamId])
+}
+
+model Tournament {
+  id        Int              @id @default(autoincrement())
+  name      String
+  status    TournamentStatus @default(CREATION)
+  format    TournamentFormat @default(ROUND_ROBIN)
+  createdAt DateTime         @default(now())
+
+  teams   TournamentTeam[]
+  matches Match[]
+  results TournamentResult[]
+}
+
+model TournamentTeam {
+  tournamentId Int
+  teamId       Int
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  team         Team       @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@id([tournamentId, teamId])
+}
+
+model Match {
+  id           Int      @id @default(autoincrement())
+  tournamentId Int
+  homeTeamId   Int
+  awayTeamId   Int
+  scoreHome    Int?
+  scoreAway    Int?
+  isPlayed     Boolean  @default(false)
+  // Shared: journée for round-robin, round number for knockout
+  round        Int?
+  // GROUP_KNOCKOUT discrimination
+  phase        String?  // 'GROUP' | 'KNOCKOUT'
+  groupNum     Int?     // group index (0-based) for GROUP phase
+
+  tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  homeTeam   Team       @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeam   Team       @relation("AwayTeam", fields: [awayTeamId], references: [id])
+}
+
+model TournamentResult {
+  id           Int        @id @default(autoincrement())
+  tournamentId Int
+  teamId       Int
+  rank         Int
+  points       Int
+  goalsFor     Int
+  goalsAgainst Int
+
+  tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  team       Team       @relation(fields: [teamId], references: [id])
+}

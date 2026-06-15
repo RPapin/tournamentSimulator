@@ -1,0 +1,60 @@
+<div class="max-w-4xl mx-auto px-4 py-8">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Tournois</h1>
+      <p class="text-sm text-gray-500 mt-1">{{ tournaments().length }} tournoi(s)</p>
+    </div>
+    <button (click)="showForm.set(!showForm())" class="btn-primary">+ Nouveau tournoi</button>
+  </div>
+
+  @if (showForm()) {
+    <div class="card mb-6">
+      <h2 class="text-base font-semibold text-gray-800 mb-4">Créer un tournoi</h2>
+      <div class="space-y-3">
+        <input [(ngModel)]="newName" (keydown.enter)="create()" class="input w-full" placeholder="Nom du tournoi" />
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Format</label>
+          <select [(ngModel)]="newFormat" class="input w-full">
+            <option value="ROUND_ROBIN">Round-robin — toutes les équipes s'affrontent</option>
+            <option value="ELIMINATION">Élimination directe — bracket knockout</option>
+            <option value="GROUP_KNOCKOUT">Poules + élimination — phase de groupes puis finale</option>
+          </select>
+        </div>
+        <div class="flex gap-3">
+          <button (click)="create()" [disabled]="!newName.trim()" class="btn-primary">Créer</button>
+          <button (click)="showForm.set(false); newName = ''" class="btn-secondary">Annuler</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="text-center py-12 text-gray-400">Chargement...</div>
+  } @else if (tournaments().length === 0) {
+    <div class="card text-center py-12">
+      <p class="text-gray-400 text-lg">Aucun tournoi</p>
+    </div>
+  } @else {
+    <div class="space-y-3">
+      @for (t of tournaments(); track t.id) {
+        <a [routerLink]="['/admin/tournaments', t.id]"
+          class="card flex items-center justify-between hover:shadow-md transition-shadow cursor-pointer no-underline block">
+          <div>
+            <p class="font-semibold text-gray-900">{{ t.name }}</p>
+            <p class="text-sm text-gray-400 mt-0.5">
+              {{ formatLabel(t.format) }} •
+              {{ t.teams?.length ?? 0 }} équipe(s) •
+              {{ t.createdAt | date:'dd/MM/yyyy' }}
+            </p>
+          </div>
+          <div class="flex items-center gap-3">
+            <span [class]="badgeClass(t.status)">{{ statusLabel(t.status) }}</span>
+            <svg class="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        </a>
+      }
+    </div>
+  }
+</div>

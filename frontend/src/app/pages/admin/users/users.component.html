@@ -1,0 +1,100 @@
+<div class="max-w-4xl mx-auto px-4 py-8">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Utilisateurs</h1>
+      <p class="text-sm text-gray-500 mt-1">{{ users().length }} utilisateur(s)</p>
+    </div>
+    <button (click)="showForm.set(!showForm())" class="btn-primary">
+      + Nouvel utilisateur
+    </button>
+  </div>
+
+  @if (showForm()) {
+    <div class="card mb-6">
+      <h2 class="text-base font-semibold text-gray-800 mb-4">Créer un utilisateur</h2>
+      <div class="flex gap-3">
+        <input
+          [(ngModel)]="newName"
+          (keydown.enter)="create()"
+          class="input flex-1"
+          placeholder="Nom de l'utilisateur"
+        />
+        <button (click)="create()" [disabled]="!newName.trim()" class="btn-primary">
+          Créer
+        </button>
+        <button (click)="showForm.set(false); newName = ''" class="btn-secondary">
+          Annuler
+        </button>
+      </div>
+      @if (formError()) {
+        <p class="text-red-600 text-sm mt-2">{{ formError() }}</p>
+      }
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="text-center py-12 text-gray-400">Chargement...</div>
+  } @else if (users().length === 0) {
+    <div class="card text-center py-12">
+      <p class="text-gray-400 text-lg mb-2">Aucun utilisateur</p>
+      <p class="text-gray-400 text-sm">Créez le premier utilisateur ci-dessus.</p>
+    </div>
+  } @else {
+    <div class="card p-0 overflow-hidden">
+      <table class="w-full">
+        <thead class="bg-gray-50 border-b border-gray-200">
+          <tr>
+            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Nom</th>
+            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Équipes</th>
+            <th class="px-6 py-3"></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          @for (user of users(); track user.id) {
+            <tr class="hover:bg-gray-50 transition-colors">
+              <td class="px-6 py-4">
+                @if (editingId() === user.id) {
+                  <div class="flex items-center gap-2">
+                    <input
+                      [(ngModel)]="editName"
+                      (keydown.enter)="saveEdit(user)"
+                      (keydown.escape)="cancelEdit()"
+                      class="input flex-1"
+                      autofocus
+                    />
+                    <button (click)="saveEdit(user)" class="btn-primary text-sm px-3 py-1.5">✓</button>
+                    <button (click)="cancelEdit()" class="btn-secondary text-sm px-3 py-1.5">✕</button>
+                  </div>
+                  @if (editError()) {
+                    <p class="text-red-600 text-xs mt-1">{{ editError() }}</p>
+                  }
+                } @else {
+                  <span class="font-medium text-gray-900">{{ user.name }}</span>
+                }
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-500">
+                @if (user.teams && user.teams.length > 0) {
+                  {{ teamNames(user.teams) }}
+                } @else {
+                  <span class="text-gray-300">Aucune équipe</span>
+                }
+              </td>
+              <td class="px-6 py-4 text-right">
+                @if (editingId() !== user.id) {
+                  <div class="flex justify-end gap-2">
+                    <button (click)="startEdit(user)" class="btn-secondary text-sm">
+                      Renommer
+                    </button>
+                    <button (click)="delete(user)" class="btn-danger">
+                      Supprimer
+                    </button>
+                  </div>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

@@ -1,0 +1,72 @@
+<div class="max-w-4xl mx-auto px-4 py-8">
+  <h1 class="text-2xl font-bold text-gray-900 mb-2">Mon historique</h1>
+  <p class="text-gray-500 text-sm mb-6">Tournois auxquels vous avez participé</p>
+
+  <!-- Mes équipes -->
+  @if (myTeams().length > 0) {
+    <div class="card mb-6 bg-indigo-50 border-indigo-200">
+      <h2 class="text-sm font-semibold text-indigo-800 mb-3">
+        {{ myTeams().length > 1 ? 'Mes équipes' : 'Mon équipe' }}
+      </h2>
+      <div class="flex flex-wrap gap-3">
+        @for (team of myTeams(); track team.id) {
+          <div class="bg-white rounded-lg border border-indigo-200 px-4 py-3">
+            <p class="font-semibold text-gray-900">{{ team.name }}</p>
+            @if (team.members.length > 0) {
+              <p class="text-xs text-gray-500 mt-1">{{ memberNames(team.members) }}</p>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="text-center py-12 text-gray-400">Chargement...</div>
+  } @else if (myTournaments().length === 0) {
+    <div class="card text-center py-12">
+      <p class="text-gray-400 text-lg mb-2">Aucun tournoi</p>
+      <p class="text-gray-400 text-sm">Vous n'avez pas encore participé à un tournoi.</p>
+    </div>
+  } @else {
+    <div class="space-y-3">
+      @for (t of myTournaments(); track t.id) {
+        <a [routerLink]="['/tournament', t.id]"
+          class="card flex items-center justify-between hover:shadow-md transition-shadow cursor-pointer block">
+          <div>
+            <p class="font-semibold text-gray-900">{{ t.name }}</p>
+            <p class="text-sm text-gray-400 mt-0.5">
+              {{ t.createdAt | date:'dd/MM/yyyy' }}
+              @if (t.results && t.results.length > 0) {
+                · Vainqueur : <span class="text-indigo-600 font-medium">{{ t.results[0].team.name }}</span>
+              }
+            </p>
+          </div>
+          <div class="flex items-center gap-3">
+            <span [class]="badgeClass(t.status)">{{ statusLabel(t.status) }}</span>
+            <svg class="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        </a>
+      }
+    </div>
+  }
+
+  <div class="mt-8 border-t pt-6">
+    <h2 class="text-base font-semibold text-gray-800 mb-4">Tous les tournois</h2>
+    @if (allTournaments().length === 0) {
+      <p class="text-gray-400 text-sm">Aucun tournoi disponible.</p>
+    } @else {
+      <div class="space-y-2">
+        @for (t of allTournaments(); track t.id) {
+          <a [routerLink]="['/tournament', t.id]"
+            class="flex items-center justify-between py-3 px-4 bg-white rounded-lg border border-gray-100 hover:border-indigo-200 transition-colors cursor-pointer block">
+            <span class="text-sm font-medium text-gray-700">{{ t.name }}</span>
+            <span [class]="badgeClass(t.status)">{{ statusLabel(t.status) }}</span>
+          </a>
+        }
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,75 @@
+<div class="min-h-screen bg-gradient-to-br from-indigo-50 to-indigo-100 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
+    <div class="text-center mb-8">
+      <div class="text-5xl mb-3">🏆</div>
+      <h1 class="text-2xl font-bold text-gray-900">Tournament Simulator</h1>
+      <p class="text-gray-500 text-sm mt-1">Gérez vos tournois facilement</p>
+    </div>
+
+    <div class="flex bg-gray-100 rounded-xl p-1 mb-6">
+      <button (click)="mode.set('user')"
+        [class.bg-white]="mode() === 'user'"
+        [class.shadow-sm]="mode() === 'user'"
+        [class.text-indigo-600]="mode() === 'user'"
+        [class.font-semibold]="mode() === 'user'"
+        class="flex-1 py-2 rounded-lg text-sm transition-all">
+        Utilisateur
+      </button>
+      <button (click)="mode.set('admin')"
+        [class.bg-white]="mode() === 'admin'"
+        [class.shadow-sm]="mode() === 'admin'"
+        [class.text-indigo-600]="mode() === 'admin'"
+        [class.font-semibold]="mode() === 'admin'"
+        class="flex-1 py-2 rounded-lg text-sm transition-all">
+        Administrateur
+      </button>
+    </div>
+
+    @if (mode() === 'user') {
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          Sélectionner votre nom
+        </label>
+        @if (loading()) {
+          <div class="input text-gray-400">Chargement...</div>
+        } @else {
+          <select [(ngModel)]="selectedUser" class="input">
+            <option value="">-- Choisissez votre nom --</option>
+            @for (u of users(); track u.id) {
+              <option [value]="u.name">{{ u.name }}</option>
+            }
+          </select>
+        }
+        @if (users().length === 0 && !loading()) {
+          <p class="text-xs text-amber-600 mt-2">
+            Aucun utilisateur disponible. Connectez-vous en admin pour en créer.
+          </p>
+        }
+      </div>
+    } @else {
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          Mot de passe administrateur
+        </label>
+        <input
+          type="password"
+          [(ngModel)]="adminPassword"
+          (keydown.enter)="login()"
+          class="input"
+          placeholder="••••••••"
+        />
+      </div>
+    }
+
+    @if (error()) {
+      <div class="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+        {{ error() }}
+      </div>
+    }
+
+    <button (click)="login()" [disabled]="submitting()"
+      class="btn-primary w-full mt-6">
+      @if (submitting()) { Connexion en cours... } @else { Se connecter }
+    </button>
+  </div>
+</div>

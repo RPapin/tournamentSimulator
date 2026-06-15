@@ -1,0 +1,152 @@
+<!-- ═══════════════════════════ TOOLTIP NOM D'ÉQUIPE ════════════════════════ -->
+<ng-template #teamName let-id="id" let-name="name">
+  <span class="relative group/team inline-block">
+    <span class="cursor-help font-medium border-b border-dotted border-gray-400"
+      [class.text-indigo-700]="isMyTeam(id)"
+      [class.font-bold]="isMyTeam(id)"
+      [class.text-gray-900]="!isMyTeam(id)">
+      {{ name }}
+      @if (isMyTeam(id)) { <span class="text-xs ml-1 text-indigo-500">(moi)</span> }
+    </span>
+    <span class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5
+                 opacity-0 group-hover/team:opacity-100 transition-opacity duration-150
+                 bg-gray-800 text-white text-xs font-normal rounded-lg px-3 py-1.5
+                 whitespace-nowrap z-30 shadow-xl min-w-max">
+      {{ teamMembersStr(id) }}
+      <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800"></span>
+    </span>
+  </span>
+</ng-template>
+
+<div class="max-w-5xl mx-auto px-4 py-8">
+  <a routerLink="/history" class="text-sm text-indigo-600 hover:underline mb-4 inline-block">
+    ← Retour à l'historique
+  </a>
+
+  @if (loading()) {
+    <div class="text-center py-12 text-gray-400">Chargement...</div>
+  } @else if (tournament()) {
+    <div class="mb-6 flex items-center gap-4">
+      <h1 class="text-2xl font-bold text-gray-900">{{ tournament()!.name }}</h1>
+      <span [class]="badgeClass(tournament()!.status)">{{ statusLabel(tournament()!.status) }}</span>
+    </div>
+
+    @if (tournament()!.status === 'FINISHED') {
+      <div class="space-y-6">
+        <div class="card">
+          <h2 class="text-base font-semibold text-gray-800 mb-4">Classement final</h2>
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 border-b">
+              <tr>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Rang</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Équipe</th>
+                <th class="px-2 py-3 text-center text-xs font-semibold text-gray-500">Buts+</th>
+                <th class="px-2 py-3 text-center text-xs font-semibold text-gray-500">Buts-</th>
+                <th class="px-2 py-3 text-center text-xs font-semibold text-gray-500">Pts</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              @for (r of tournament()!.results; track r.id) {
+                <tr [class.bg-yellow-50]="r.rank === 1" [class.bg-indigo-50]="isMyTeam(r.teamId)">
+                  <td class="px-4 py-3 font-bold">
+                    @if (r.rank === 1) { 🥇 }
+                    @else if (r.rank === 2) { 🥈 }
+                    @else if (r.rank === 3) { 🥉 }
+                    @else { {{ r.rank }} }
+                  </td>
+                  <td class="px-4 py-3">
+                    <ng-container *ngTemplateOutlet="teamName; context: { id: r.teamId, name: r.team.name }"></ng-container>
+                  </td>
+                  <td class="px-2 py-3 text-center">{{ r.goalsFor }}</td>
+                  <td class="px-2 py-3 text-center">{{ r.goalsAgainst }}</td>
+                  <td class="px-2 py-3 text-center font-bold text-indigo-700">{{ r.points }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <h2 class="text-base font-semibold text-gray-800 mb-4">Résultats des matchs</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            @for (match of tournament()!.matches; track match.id) {
+              <div class="bg-gray-50 rounded-lg px-4 py-3 flex items-center justify-between text-sm"
+                [class.ring-1]="isMyTeam(match.homeTeamId) || isMyTeam(match.awayTeamId)"
+                [class.ring-indigo-300]="isMyTeam(match.homeTeamId) || isMyTeam(match.awayTeamId)">
+                <span class="flex-1 text-right">
+                  <ng-container *ngTemplateOutlet="teamName; context: { id: match.homeTeamId, name: match.homeTeam.name }"></ng-container>
+                </span>
+                <span class="mx-3 font-bold text-gray-800">{{ match.scoreHome }} - {{ match.scoreAway }}</span>
+                <span class="flex-1">
+                  <ng-container *ngTemplateOutlet="teamName; context: { id: match.awayTeamId, name: match.awayTeam.name }"></ng-container>
+                </span>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    } @else {
+      <div class="space-y-6">
+        <div class="card">
+          <h2 class="text-base font-semibold text-gray-800 mb-4">Classement provisoire</h2>
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 border-b">
+              <tr>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Équipe</th>
+                <th class="px-2 py-3 text-center text-xs font-semibold text-gray-500">J</th>
+                <th class="px-2 py-3 text-center text-xs font-semibold text-gray-500">G</th>
+                <th class="px-2 py-3 text-center text-xs font-semibold text-gray-500">N</th>
+                <th class="px-2 py-3 text-center text-xs font-semibold text-gray-500">P</th>
+                <th class="px-2 py-3 text-center text-xs font-semibold text-gray-500">Diff</th>
+                <th class="px-2 py-3 text-center text-xs font-semibold text-gray-500">Pts</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              @for (s of tournament()!.standings; track s.teamId; let i = $index) {
+                <tr [class.bg-indigo-50]="isMyTeam(s.teamId)">
+                  <td class="px-4 py-2 font-medium">
+                    <span class="text-gray-400 mr-2">{{ i + 1 }}</span>
+                    <ng-container *ngTemplateOutlet="teamName; context: { id: s.teamId, name: s.teamName }"></ng-container>
+                  </td>
+                  <td class="px-2 py-2 text-center">{{ s.played }}</td>
+                  <td class="px-2 py-2 text-center text-green-600">{{ s.won }}</td>
+                  <td class="px-2 py-2 text-center">{{ s.drawn }}</td>
+                  <td class="px-2 py-2 text-center text-red-500">{{ s.lost }}</td>
+                  <td class="px-2 py-2 text-center">{{ s.goalDiff > 0 ? '+' : '' }}{{ s.goalDiff }}</td>
+                  <td class="px-2 py-2 text-center font-bold text-indigo-700">{{ s.points }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @if (tournament()!.status === 'ONGOING') {
+          <div class="card">
+            <h2 class="text-base font-semibold text-gray-800 mb-4">Matchs</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              @for (match of tournament()!.matches; track match.id) {
+                <div class="bg-gray-50 rounded-lg px-4 py-3 flex items-center justify-between text-sm"
+                  [class.ring-1]="isMyTeam(match.homeTeamId) || isMyTeam(match.awayTeamId)"
+                  [class.ring-indigo-300]="isMyTeam(match.homeTeamId) || isMyTeam(match.awayTeamId)">
+                  <span class="flex-1 text-right">
+                    <ng-container *ngTemplateOutlet="teamName; context: { id: match.homeTeamId, name: match.homeTeam.name }"></ng-container>
+                  </span>
+                  <span class="mx-3 font-medium text-gray-500">
+                    @if (match.isPlayed) {
+                      <span class="font-bold text-gray-800">{{ match.scoreHome }} - {{ match.scoreAway }}</span>
+                    } @else {
+                      <span class="text-gray-300">vs</span>
+                    }
+                  </span>
+                  <span class="flex-1">
+                    <ng-container *ngTemplateOutlet="teamName; context: { id: match.awayTeamId, name: match.awayTeam.name }"></ng-container>
+                  </span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>

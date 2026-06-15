@@ -1,0 +1,42 @@
+<nav class="bg-indigo-700 text-white shadow-md">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      <div class="flex items-center gap-8">
+        <span class="font-bold text-lg tracking-tight">🏆 Tournament Simulator</span>
+        <div class="flex items-center gap-1">
+          @if (auth.isAdmin()) {
+            <a routerLink="/admin/tournaments" routerLinkActive="bg-indigo-800"
+               class="px-3 py-2 rounded-md text-sm font-medium text-indigo-100 hover:bg-indigo-600 transition-colors">
+              Tournois
+            </a>
+            <a routerLink="/admin/teams" routerLinkActive="bg-indigo-800"
+               class="px-3 py-2 rounded-md text-sm font-medium text-indigo-100 hover:bg-indigo-600 transition-colors">
+              Équipes
+            </a>
+            <a routerLink="/admin/users" routerLinkActive="bg-indigo-800"
+               class="px-3 py-2 rounded-md text-sm font-medium text-indigo-100 hover:bg-indigo-600 transition-colors">
+              Utilisateurs
+            </a>
+          } @else {
+            <a routerLink="/history" routerLinkActive="bg-indigo-800"
+               class="px-3 py-2 rounded-md text-sm font-medium text-indigo-100 hover:bg-indigo-600 transition-colors">
+              Mon historique
+            </a>
+          }
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <span class="text-sm text-indigo-200">
+          {{ auth.user()?.name }}
+          @if (auth.isAdmin()) {
+            <span class="ml-1 text-xs bg-indigo-500 px-1.5 py-0.5 rounded">ADMIN</span>
+          }
+        </span>
+        <button (click)="auth.logout()"
+          class="text-sm bg-indigo-600 border border-indigo-500 px-3 py-1.5 rounded-lg hover:bg-indigo-500 transition-colors">
+          Déconnexion
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>

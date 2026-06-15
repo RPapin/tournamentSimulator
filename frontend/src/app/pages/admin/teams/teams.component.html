@@ -1,0 +1,83 @@
+<div class="max-w-4xl mx-auto px-4 py-8">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Équipes</h1>
+      <p class="text-sm text-gray-500 mt-1">{{ teams().length }} équipe(s)</p>
+    </div>
+    <button (click)="showForm.set(!showForm())" class="btn-primary">
+      + Nouvelle équipe
+    </button>
+  </div>
+
+  @if (showForm()) {
+    <div class="card mb-6">
+      <h2 class="text-base font-semibold text-gray-800 mb-4">Créer une équipe</h2>
+      <div class="flex gap-3">
+        <input [(ngModel)]="newName" (keydown.enter)="createTeam()" class="input flex-1"
+          placeholder="Nom de l'équipe" />
+        <button (click)="createTeam()" [disabled]="!newName.trim()" class="btn-primary">Créer</button>
+        <button (click)="showForm.set(false); newName = ''" class="btn-secondary">Annuler</button>
+      </div>
+      @if (formError()) {
+        <p class="text-red-600 text-sm mt-2">{{ formError() }}</p>
+      }
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="text-center py-12 text-gray-400">Chargement...</div>
+  } @else if (teams().length === 0) {
+    <div class="card text-center py-12">
+      <p class="text-gray-400 text-lg">Aucune équipe</p>
+    </div>
+  } @else {
+    <div class="space-y-4">
+      @for (team of teams(); track team.id) {
+        <div class="card">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold text-gray-900">{{ team.name }}</h2>
+            <div class="flex gap-2">
+              <button (click)="toggleExpand(team.id)" class="btn-secondary text-sm">
+                {{ expandedTeam() === team.id ? 'Fermer' : 'Gérer les membres' }}
+              </button>
+              <button (click)="deleteTeam(team)" class="btn-danger">Supprimer</button>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap gap-2">
+            @if (team.members && team.members.length > 0) {
+              @for (m of team.members; track m.user.id) {
+                <span class="inline-flex items-center gap-1 bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-sm">
+                  {{ m.user.name }}
+                  @if (expandedTeam() === team.id) {
+                    <button (click)="removeMember(team, m.user.id)"
+                      class="text-indigo-400 hover:text-red-500 ml-1 font-bold">×</button>
+                  }
+                </span>
+              }
+            } @else {
+              <span class="text-gray-400 text-sm">Aucun membre</span>
+            }
+          </div>
+
+          @if (expandedTeam() === team.id) {
+            <div class="mt-4 pt-4 border-t border-gray-100">
+              <p class="text-sm font-medium text-gray-700 mb-2">Ajouter un membre</p>
+              <div class="flex gap-3">
+                <select [(ngModel)]="selectedUserId" class="input flex-1">
+                  <option value="">-- Sélectionner un utilisateur --</option>
+                  @for (u of availableUsers(team); track u.id) {
+                    <option [value]="u.id">{{ u.name }}</option>
+                  }
+                </select>
+                <button (click)="addMember(team)" [disabled]="!selectedUserId" class="btn-primary">
+                  Ajouter
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>
